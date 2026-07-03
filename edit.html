@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的网站 - 编辑日记</title>
+    <style>
+        .edit-container {
+            max-width: 700px;
+            margin: 30px auto;
+            padding: 0 15px;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 8px 20px;
+            background-color: #e0e0e0;
+            color: #333;
+            text-decoration: none;
+            border-radius: 20px;
+            font-size: 14px;
+            transition: background-color 0.2s ease;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover {
+            background-color: #d0d0d0;
+        }
+        .edit-section {
+            background: #fafafa;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+        .edit-section h3 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        .form-group input[type="date"] {
+            width: 100%;
+            max-width: 250px;
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+        .form-group textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 10px 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 15px;
+            line-height: 1.7;
+            resize: vertical;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 24px;
+            border: none;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .btn-save {
+            background-color: #333;
+            color: #fff;
+        }
+        .btn-save:hover {
+            background-color: #555;
+        }
+        .btn-delete {
+            background-color: #d9534f;
+            color: #fff;
+        }
+        .btn-delete:hover {
+            background-color: #c9302c;
+        }
+        .btn-secondary {
+            background-color: #e0e0e0;
+            color: #333;
+        }
+        .btn-secondary:hover {
+            background-color: #d0d0d0;
+        }
+        .existing-list {
+            list-style: none;
+            padding: 0;
+        }
+        .existing-list li {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 15px;
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        .existing-list li span {
+            font-size: 15px;
+            color: #333;
+        }
+        .existing-list li .item-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .existing-list li .btn {
+            padding: 6px 16px;
+            font-size: 13px;
+        }
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 15px;
+            color: #fff;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+        .toast.success {
+            background-color: #5cb85c;
+        }
+        .toast.error {
+            background-color: #d9534f;
+        }
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 9998;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.show {
+            display: flex;
+        }
+        .modal {
+            background: #fff;
+            border-radius: 10px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+        .modal p {
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        .modal .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <div style="background-color: #f1f1f1; padding: 20px;">
+        <a href="index.html">
+            <img src="tjm.jpg" alt="tjm"
+                style="width:80px; height:80px; border-radius:50%; object-fit:cover;">
+        </a>
+    </div>
+
+    <div class="edit-container">
+        <a href="menu.html" class="back-btn">&larr; 返回菜单</a>
+
+        <!-- 新增/编辑区域 -->
+        <div class="edit-section">
+            <h3 id="form-title">新增日记</h3>
+            <div class="form-group">
+                <label for="date-input">日期</label>
+                <input type="date" id="date-input" lang="zh-CN">
+            </div>
+            <div class="form-group">
+                <label for="content-input">内容（每行一段）</label>
+                <textarea id="content-input" placeholder="在这里输入日记内容..."></textarea>
+            </div>
+            <div class="form-actions">
+                <button class="btn btn-save" onclick="saveEntry()">保存</button>
+                <button class="btn btn-secondary" onclick="resetForm()">清空</button>
+            </div>
+        </div>
+
+        <!-- 已有日记列表 -->
+        <div class="edit-section">
+            <h3>已有日记</h3>
+            <ul class="existing-list" id="existing-list">
+                <!-- 由 JS 动态生成 -->
+            </ul>
+        </div>
+    </div>
+
+    <div style="background-color:#f1f1f1; text-align:center; padding:40px;">
+        <p>我的网站</p>
+    </div>
+
+    <!-- 提示消息 -->
+    <div class="toast" id="toast"></div>
+
+    <!-- 删除确认弹窗 -->
+    <div class="modal-overlay" id="modal">
+        <div class="modal">
+            <p id="modal-text">确认删除？</p>
+            <div class="modal-actions">
+                <button class="btn btn-delete" id="modal-confirm">确认删除</button>
+                <button class="btn btn-secondary" onclick="closeModal()">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="diary-data.js"></script>
+    <script>
+        var editingDate = null; // 当前正在编辑的日期（null 表示新增模式）
+
+        // 显示提示消息
+        function showToast(msg, type) {
+            var toast = document.getElementById("toast");
+            toast.textContent = msg;
+            toast.className = "toast show " + (type || "success");
+            setTimeout(function() {
+                toast.className = "toast";
+            }, 2500);
+        }
+
+        // 渲染已有日记列表
+        function renderList() {
+            var data = loadDiaryData();
+            var list = document.getElementById("existing-list");
+
+            if (data.length === 0) {
+                list.innerHTML = "<li><span>暂无日记</span></li>";
+                return;
+            }
+
+            var html = "";
+            data.forEach(function(entry) {
+                html += '<li>';
+                html += '<span>' + formatDate(entry.date) + '</span>';
+                html += '<div class="item-actions">';
+                html += '<button class="btn btn-secondary" onclick="editEntry(\'' + entry.date + '\')">编辑</button>';
+                html += '<button class="btn btn-delete" onclick="confirmDelete(\'' + entry.date + '\')">删除</button>';
+                html += '</div>';
+                html += '</li>';
+            });
+            list.innerHTML = html;
+        }
+
+        // 新增模式：重置表单
+        function setTodayDate() {
+            var today = new Date();
+            var yyyy = today.getFullYear();
+            var mm = String(today.getMonth() + 1).padStart(2, '0');
+            var dd = String(today.getDate()).padStart(2, '0');
+            document.getElementById("date-input").value = yyyy + "-" + mm + "-" + dd;
+        }
+
+        function resetForm() {
+            editingDate = null;
+            document.getElementById("form-title").textContent = "新增日记";
+            setTodayDate();
+            document.getElementById("date-input").disabled = false;
+            document.getElementById("content-input").value = "";
+        }
+
+        // 编辑模式：加载已有日记到表单
+        function editEntry(date) {
+            var entry = getDiaryEntry(date);
+            if (entry) {
+                editingDate = date;
+                document.getElementById("form-title").textContent = "编辑日记 - " + formatDate(date);
+                document.getElementById("date-input").value = date;
+                document.getElementById("date-input").disabled = true; // 编辑时不可改日期
+                document.getElementById("content-input").value = entry.paragraphs.join("\n");
+                window.scrollTo({ top: 0, behavior: "smooth" });
+            }
+        }
+
+        // 保存（新增或更新）
+        function saveEntry() {
+            var date = document.getElementById("date-input").value;
+            var content = document.getElementById("content-input").value;
+
+            if (!date) {
+                showToast("请选择日期", "error");
+                return;
+            }
+            if (!content.trim()) {
+                showToast("内容不能为空", "error");
+                return;
+            }
+
+            // 按换行分段
+            var paragraphs = content.split("\n").map(function(s) {
+                return s.trim();
+            }).filter(function(s) {
+                return s.length > 0;
+            });
+
+            if (editingDate) {
+                // 更新
+                if (updateDiaryEntry(editingDate, paragraphs)) {
+                    showToast("日记已更新", "success");
+                    resetForm();
+                    renderList();
+                } else {
+                    showToast("更新失败", "error");
+                }
+            } else {
+                // 新增
+                if (addDiaryEntry(date, paragraphs)) {
+                    showToast("日记已添加", "success");
+                    resetForm();
+                    renderList();
+                } else {
+                    showToast("该日期已存在日记，请直接编辑", "error");
+                }
+            }
+        }
+
+        // 删除确认
+        var pendingDeleteDate = null;
+
+        function confirmDelete(date) {
+            pendingDeleteDate = date;
+            document.getElementById("modal-text").textContent = "确认删除 " + formatDate(date) + " 的日记？";
+            document.getElementById("modal").classList.add("show");
+        }
+
+        function closeModal() {
+            document.getElementById("modal").classList.remove("show");
+            pendingDeleteDate = null;
+        }
+
+        document.getElementById("modal-confirm").addEventListener("click", function() {
+            if (pendingDeleteDate) {
+                if (deleteDiaryEntry(pendingDeleteDate)) {
+                    showToast("日记已删除", "success");
+                    // 如果正在编辑被删除的日记，重置表单
+                    if (editingDate === pendingDeleteDate) {
+                        resetForm();
+                    }
+                    renderList();
+                } else {
+                    showToast("删除失败", "error");
+                }
+                closeModal();
+            }
+        });
+
+        // 点击遮罩关闭弹窗
+        document.getElementById("modal").addEventListener("click", function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // 初始化
+        renderList();
+        setTodayDate();
+    </script>
+</body>
+</html>

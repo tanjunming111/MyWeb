@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的网站</title>
+    <style>
+        .back-btn {
+            display: inline-block;
+            padding: 8px 20px;
+            background-color: #e0e0e0;
+            color: #333;
+            text-decoration: none;
+            border-radius: 20px;
+            font-size: 14px;
+            transition: background-color 0.2s ease;
+        }
+        .back-btn:hover {
+            background-color: #d0d0d0;
+        }
+    </style>
+</head>
+<body>
+    <div style="background-color: #f1f1f1; padding: 20px;">
+        <a href="index.html">
+            <img src="tjm.jpg" alt="tjm"
+                style="width:80px; height:80px; border-radius:50%; object-fit:cover;">
+        </a>
+    </div>
+    <div style="max-width: 700px; margin: 20px auto 0; padding: 0 15px;">
+        <a href="menu.html" class="back-btn">&larr; 返回菜单</a>
+    </div>
+    <div id="diary-content" style="max-width: 700px; margin: 30px auto; padding: 15px; line-height: 1.7;">
+        <!-- 内容由 JavaScript 动态填充 -->
+    </div>
+    <div style="background-color:#f1f1f1; text-align:center; padding:40px;">
+        <p>我的网站</p>
+    </div>
+
+    <script src="diary-data.js"></script>
+    <script>
+        var params = new URLSearchParams(window.location.search);
+        var date = params.get("date");
+        var container = document.getElementById("diary-content");
+
+        if (date) {
+            var entry = getDiaryEntry(date);
+            if (entry) {
+                var html = "<h2>Jimmy</h2><hr><h3>" + formatDateTitle(entry.date) + "</h3>";
+                entry.paragraphs.forEach(function(p) {
+                    html += "<p>" + p + "</p>";
+                });
+                container.innerHTML = html;
+                document.title = "我的网站 - " + formatDate(entry.date);
+            } else {
+                container.innerHTML = "<h2>Jimmy</h2><hr><p>未找到该日期的日记。</p>";
+            }
+        } else {
+            container.innerHTML = "<h2>Jimmy</h2><hr><p>未指定日期。</p>";
+        }
+    </script>
+</body>
+</html>

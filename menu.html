@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的网站 - 菜单</title>
+    <style>
+        .menu-container {
+            max-width: 700px;
+            margin: 30px auto;
+            padding: 0 15px;
+        }
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 8px 20px;
+            background-color: #e0e0e0;
+            color: #333;
+            text-decoration: none;
+            border-radius: 20px;
+            font-size: 14px;
+            transition: background-color 0.2s ease;
+        }
+        .back-btn:hover {
+            background-color: #d0d0d0;
+        }
+        .edit-btn {
+            display: inline-block;
+            padding: 8px 20px;
+            background-color: #333;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 20px;
+            font-size: 14px;
+            transition: background-color 0.2s ease;
+        }
+        .edit-btn:hover {
+            background-color: #555;
+        }
+        .month-title {
+            font-size: 22px;
+            color: #333;
+            margin: 30px 0 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        .date-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .date-list a {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #e0e0e0;
+            color: #333;
+            text-decoration: none;
+            border-radius: 20px;
+            font-size: 15px;
+            transition: background-color 0.2s ease;
+        }
+        .date-list a:hover {
+            background-color: #d0d0d0;
+        }
+        .empty-msg {
+            color: #999;
+            font-size: 15px;
+            padding: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div style="background-color: #f1f1f1; padding: 20px;">
+        <a href="index.html">
+            <img src="tjm.jpg" alt="tjm"
+                style="width:80px; height:80px; border-radius:50%; object-fit:cover;">
+        </a>
+    </div>
+    <div class="menu-container">
+        <div class="top-bar">
+            <a href="index.html" class="back-btn">&larr; 返回主页</a>
+            <a href="edit.html" class="edit-btn">编辑日记</a>
+        </div>
+        <div id="menu-content">
+            <!-- 菜单内容由 JavaScript 动态生成 -->
+        </div>
+    </div>
+    <div style="background-color:#f1f1f1; text-align:center; padding:40px;">
+        <p>我的网站</p>
+    </div>
+
+    <script src="diary-data.js"></script>
+    <script>
+        var menu = document.getElementById("menu-content");
+        var grouped = getDiaryByMonth();
+        var months = Object.keys(grouped);
+
+        if (months.length === 0) {
+            menu.innerHTML = '<p class="empty-msg">暂无日记，点击"编辑日记"添加。</p>';
+        } else {
+            var html = "";
+            months.forEach(function(month) {
+                html += '<h2 class="month-title">' + getMonthLabel(month) + '</h2>';
+                html += '<div class="date-list">';
+                grouped[month].forEach(function(entry) {
+                    html += '<a href="diary.html?date=' + entry.date + '">' + formatDate(entry.date) + '</a>';
+                });
+                html += '</div>';
+            });
+            menu.innerHTML = html;
+        }
+    </script>
+</body>
+</html>
