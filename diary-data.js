@@ -70,13 +70,13 @@ const defaultDiaryData = [
 // 加载所有日记数据（优先从 localStorage 读取）
 function loadDiaryData() {
     var stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-        try {
-            return JSON.parse(stored);
-        } catch (e) {
-            console.error("数据解析失败，使用默认数据", e);
-        }
-    }
+    // if (stored) {
+    //     try {
+    //         return JSON.parse(stored);
+    //     } catch (e) {
+    //         console.error("数据解析失败，使用默认数据", e);
+    //     }
+    // }
     // 首次访问，初始化 localStorage
     saveDiaryData(defaultDiaryData);
     return defaultDiaryData;
