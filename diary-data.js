@@ -133,7 +133,7 @@ function getDiaryByMonth() {
     var data = loadDiaryData();
     var grouped = {};
     data.forEach(function(entry) {
-        var month = entry.date.substring(0, 7);
+        var month = entry.date.substring(0, 8);
         if (!grouped[month]) {
             grouped[month] = [];
         }
