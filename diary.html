@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>我的网站</title>
     <style>
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
         .back-btn {
             display: inline-block;
             padding: 8px 20px;
@@ -18,6 +25,19 @@
         .back-btn:hover {
             background-color: #d0d0d0;
         }
+        .edit-btn {
+            display: inline-block;
+            padding: 8px 20px;
+            background-color: #333;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 20px;
+            font-size: 14px;
+            transition: background-color 0.2s ease;
+        }
+        .edit-btn:hover {
+            background-color: #555;
+        }
     </style>
 </head>
 <body>
@@ -28,7 +48,10 @@
         </a>
     </div>
     <div style="max-width: 700px; margin: 20px auto 0; padding: 0 15px;">
-        <a href="menu.html" class="back-btn">&larr; 返回菜单</a>
+        <div class="top-bar">
+            <a href="menu.html" class="back-btn">&larr; 返回菜单</a>
+            <a href="#" class="edit-btn" id="edit-link">编辑日记</a>
+        </div>
     </div>
     <div id="diary-content" style="max-width: 700px; margin: 30px auto; padding: 15px; line-height: 1.7;">
         <!-- 内容由 JavaScript 动态填充 -->
@@ -44,6 +67,7 @@
         var container = document.getElementById("diary-content");
 
         if (date) {
+            document.getElementById("edit-link").href = "edit.html?date=" + date;
             var entry = getDiaryEntry(date);
             if (entry) {
                 var html = "<h2>Jimmy</h2><hr><h3>" + formatDateTitle(entry.date) + "</h3>";
