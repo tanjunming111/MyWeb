@@ -222,8 +222,12 @@
         <a href="javascript:history.back()" class="back-btn">&larr; 返回上一页</a>
 
         <div class="file-link-bar">
-            <button class="btn-link" id="link-btn" onclick="linkFile()">关联本地文件</button>
-            <span class="file-status" id="file-status">未关联本地文件</span>
+            <button class="btn-link" id="link-btn" onclick="linkFile()">关联 diary-data.js</button>
+            <span class="file-status" id="file-status">未关联</span>
+        </div>
+        <div class="file-link-bar">
+            <button class="btn-link" id="link-version-btn" onclick="linkVersionFile()">关联 version.js</button>
+            <span class="file-status" id="version-file-status">未关联，需手动更新</span>
         </div>
 
         <!-- 新增/编辑区域 -->
@@ -270,15 +274,22 @@
         </div>
     </div>
 
+    <script src="version.js"></script>
     <script>
-        // 动态加载 diary-data.js（带时间戳，强制获取最新版本）
+        var diaryVersion = 1;
+
         (function() {
             var s = document.createElement('script');
-            s.src = 'diary-data.js?t=' + Date.now();
+            s.src = 'diary-data.js?t=' + (typeof diaryVersion !== 'undefined' ? diaryVersion : Date.now());
             s.onload = function() {
+                // 从数据文件中获取最新的版本号
+                if (typeof window.diaryVersion !== 'undefined' && window.diaryVersion > diaryVersion) {
+                    diaryVersion = window.diaryVersion;
+                }
                 renderList();
                 setTodayDate();
                 initFileLink();
+                initVersionFileLink();
                 // 检查 URL 参数，自动加载对应日期的日记
                 var params = new URLSearchParams(window.location.search);
                 var dateParam = params.get("date");
@@ -461,13 +472,93 @@
             lines.push("    var parts = dateStr.split(\"-\");");
             lines.push("    return parts[0] + \".\" + parseInt(parts[1]) + \".\" + parseInt(parts[2]);");
             lines.push("}");
+            lines.push("");
+            lines.push("// 数据版本号（每次编辑保存时 +1，用于缓存控制）");
+            lines.push("var diaryVersion = " + diaryVersion + ";");
             return lines.join("\n");
         }
 
-        // 同步写入本地文件
+        // ===== 版本文件管理 =====
+        var versionFileHandle = null;
+
+        async function saveVersionHandle(handle) {
+            var db = await openDB();
+            return new Promise(function(resolve, reject) {
+                var tx = db.transaction(STORE_NAME, "readwrite");
+                tx.objectStore(STORE_NAME).put(handle, "version_file");
+                tx.oncomplete = function() { resolve(); };
+                tx.onerror = function() { reject(tx.error); };
+            });
+        }
+
+        async function loadVersionHandle() {
+            var db = await openDB();
+            return new Promise(function(resolve, reject) {
+                var tx = db.transaction(STORE_NAME, "readonly");
+                var req = tx.objectStore(STORE_NAME).get("version_file");
+                req.onsuccess = function() { resolve(req.result || null); };
+                req.onerror = function() { reject(req.error); };
+            });
+        }
+
+        async function linkVersionFile() {
+            if (!window.showOpenFilePicker) {
+                showToast("当前浏览器不支持文件关联功能", "error");
+                return;
+            }
+            try {
+                var handle = await window.showOpenFilePicker({
+                    types: [{
+                        description: "JavaScript 文件",
+                        accept: { "application/javascript": [".js"] }
+                    }]
+                });
+                versionFileHandle = handle[0];
+                await saveVersionHandle(versionFileHandle);
+                updateVersionFileStatus(true);
+                showToast("已关联 version.js", "success");
+            } catch (e) {
+                if (e.name !== "AbortError") {
+                    showToast("关联失败: " + e.message, "error");
+                }
+            }
+        }
+
+        function updateVersionFileStatus(linked) {
+            var status = document.getElementById("version-file-status");
+            if (linked) {
+                status.textContent = "已关联，保存时同步更新";
+                status.className = "file-status linked";
+            } else {
+                status.textContent = "未关联，需手动更新";
+                status.className = "file-status";
+            }
+        }
+
+        async function initVersionFileLink() {
+            try {
+                var handle = await loadVersionHandle();
+                if (handle) {
+                    versionFileHandle = handle;
+                    updateVersionFileStatus(true);
+                }
+            } catch (e) {
+                console.error("加载版本文件句柄失败", e);
+            }
+        }
+
+        function generateVersionFileContent() {
+            return "var diaryVersion = " + diaryVersion + ";\n";
+        }
+
+        // 同步写入本地文件（diary-data.js + version.js）
         async function syncToFile() {
             if (!fileHandle) return;
             try {
+                // 版本号 +1
+                diaryVersion = (diaryVersion || 0) + 1;
+
+                // 写入 diary-data.js
                 var hasPermission = await verifyPermission(fileHandle);
                 if (!hasPermission) {
                     showToast("文件写入权限被拒绝", "error");
@@ -477,6 +568,17 @@
                 var writable = await fileHandle.createWritable();
                 await writable.write(content);
                 await writable.close();
+
+                // 写入 version.js
+                if (versionFileHandle) {
+                    var vPermission = await verifyPermission(versionFileHandle);
+                    if (vPermission) {
+                        var vContent = generateVersionFileContent();
+                        var vWritable = await versionFileHandle.createWritable();
+                        await vWritable.write(vContent);
+                        await vWritable.close();
+                    }
+                }
             } catch (e) {
                 showToast("同步到文件失败: " + e.message, "error");
             }

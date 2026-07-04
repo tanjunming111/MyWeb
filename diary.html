@@ -60,10 +60,11 @@
         <p>我的网站</p>
     </div>
 
+    <script src="version.js"></script>
     <script>
         (function() {
             var s = document.createElement('script');
-            s.src = 'diary-data.js?t=' + Date.now();
+            s.src = 'diary-data.js?t=' + (typeof diaryVersion !== 'undefined' ? diaryVersion : Date.now());
             s.onload = function() {
                 var params = new URLSearchParams(window.location.search);
                 var date = params.get("date");
