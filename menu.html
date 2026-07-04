@@ -95,26 +95,32 @@
         <p>我的网站</p>
     </div>
 
-    <script src="diary-data.js"></script>
     <script>
-        var menu = document.getElementById("menu-content");
-        var grouped = getDiaryByMonth();
-        var months = Object.keys(grouped);
+        (function() {
+            var s = document.createElement('script');
+            s.src = 'diary-data.js?t=' + Date.now();
+            s.onload = function() {
+                var menu = document.getElementById("menu-content");
+                var grouped = getDiaryByMonth();
+                var months = Object.keys(grouped);
 
-        if (months.length === 0) {
-            menu.innerHTML = '<p class="empty-msg">暂无日记，点击"编辑日记"添加。</p>';
-        } else {
-            var html = "";
-            months.forEach(function(month) {
-                html += '<h2 class="month-title">' + getMonthLabel(month) + '</h2>';
-                html += '<div class="date-list">';
-                grouped[month].forEach(function(entry) {
-                    html += '<a href="diary.html?date=' + entry.date + '">' + formatDate(entry.date) + '</a>';
-                });
-                html += '</div>';
-            });
-            menu.innerHTML = html;
-        }
+                if (months.length === 0) {
+                    menu.innerHTML = '<p class="empty-msg">暂无日记，点击"编辑日记"添加。</p>';
+                } else {
+                    var html = "";
+                    months.forEach(function(month) {
+                        html += '<h2 class="month-title">' + getMonthLabel(month) + '</h2>';
+                        html += '<div class="date-list">';
+                        grouped[month].forEach(function(entry) {
+                            html += '<a href="diary.html?date=' + entry.date + '">' + formatDate(entry.date) + '</a>';
+                        });
+                        html += '</div>';
+                    });
+                    menu.innerHTML = html;
+                }
+            };
+            document.head.appendChild(s);
+        })();
     </script>
 </body>
 </html>

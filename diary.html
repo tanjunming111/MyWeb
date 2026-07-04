@@ -60,28 +60,34 @@
         <p>我的网站</p>
     </div>
 
-    <script src="diary-data.js"></script>
     <script>
-        var params = new URLSearchParams(window.location.search);
-        var date = params.get("date");
-        var container = document.getElementById("diary-content");
+        (function() {
+            var s = document.createElement('script');
+            s.src = 'diary-data.js?t=' + Date.now();
+            s.onload = function() {
+                var params = new URLSearchParams(window.location.search);
+                var date = params.get("date");
+                var container = document.getElementById("diary-content");
 
-        if (date) {
-            document.getElementById("edit-link").href = "edit.html?date=" + date;
-            var entry = getDiaryEntry(date);
-            if (entry) {
-                var html = "<h2>Jimmy</h2><hr><h3>" + formatDateTitle(entry.date) + "</h3>";
-                entry.paragraphs.forEach(function(p) {
-                    html += "<p>" + p + "</p>";
-                });
-                container.innerHTML = html;
-                document.title = "我的网站 - " + formatDate(entry.date);
-            } else {
-                container.innerHTML = "<h2>Jimmy</h2><hr><p>未找到该日期的日记。</p>";
-            }
-        } else {
-            container.innerHTML = "<h2>Jimmy</h2><hr><p>未指定日期。</p>";
-        }
+                if (date) {
+                    document.getElementById("edit-link").href = "edit.html?date=" + date;
+                    var entry = getDiaryEntry(date);
+                    if (entry) {
+                        var html = "<h2>Jimmy</h2><hr><h3>" + formatDateTitle(entry.date) + "</h3>";
+                        entry.paragraphs.forEach(function(p) {
+                            html += "<p>" + p + "</p>";
+                        });
+                        container.innerHTML = html;
+                        document.title = "我的网站 - " + formatDate(entry.date);
+                    } else {
+                        container.innerHTML = "<h2>Jimmy</h2><hr><p>未找到该日期的日记。</p>";
+                    }
+                } else {
+                    container.innerHTML = "<h2>Jimmy</h2><hr><p>未指定日期。</p>";
+                }
+            };
+            document.head.appendChild(s);
+        })();
     </script>
 </body>
 </html>
