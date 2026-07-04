@@ -98,7 +98,8 @@
     <script>
         (function() {
             var s = document.createElement('script');
-            s.src = 'diary-data.js?t=' + Date.now();
+            // 添加时间戳防止浏览器缓存，确保获取最新数据
+            s.src = 'diary-data.js?t=' + v1;
             s.onload = function() {
                 var menu = document.getElementById("menu-content");
                 var grouped = getDiaryByMonth();

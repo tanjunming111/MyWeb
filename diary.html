@@ -63,7 +63,7 @@
     <script>
         (function() {
             var s = document.createElement('script');
-            s.src = 'diary-data.js?t=' + Date.now();
+            s.src = 'diary-data.js?t=' + v1;
             s.onload = function() {
                 var params = new URLSearchParams(window.location.search);
                 var date = params.get("date");
