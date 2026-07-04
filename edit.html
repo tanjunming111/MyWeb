@@ -222,12 +222,12 @@
         <a href="javascript:history.back()" class="back-btn">&larr; 返回上一页</a>
 
         <div class="file-link-bar">
-            <button class="btn-link" id="link-btn" onclick="linkFile()">关联 diary-data.js</button>
-            <span class="file-status" id="file-status">未关联</span>
+            <button class="btn-link" id="link-btn" onclick="linkFile()">关联日记文件</button>
+            <span class="file-status" id="file-status">未关联日记文件</span>
         </div>
         <div class="file-link-bar">
-            <button class="btn-link" id="link-version-btn" onclick="linkVersionFile()">关联 version.js</button>
-            <span class="file-status" id="version-file-status">未关联，需手动更新</span>
+            <button class="btn-link" id="link-version-btn" onclick="linkVersionFile()">关联版本文件</button>
+            <span class="file-status" id="version-file-status">未关联版本文件</span>
         </div>
 
         <!-- 新增/编辑区域 -->
@@ -274,34 +274,34 @@
         </div>
     </div>
 
-    <script src="version.js"></script>
     <script>
-        var diaryVersion = 1;
-
+        // ===== 数据加载：先加载 version.js，再用 tim 加载 diary-data.js =====
         (function() {
-            var s = document.createElement('script');
-            s.src = 'diary-data.js?t=' + (typeof diaryVersion !== 'undefined' ? diaryVersion : Date.now());
-            s.onload = function() {
-                // 从数据文件中获取最新的版本号
-                if (typeof window.diaryVersion !== 'undefined' && window.diaryVersion > diaryVersion) {
-                    diaryVersion = window.diaryVersion;
-                }
-                renderList();
-                setTodayDate();
-                initFileLink();
-                initVersionFileLink();
-                // 检查 URL 参数，自动加载对应日期的日记
-                var params = new URLSearchParams(window.location.search);
-                var dateParam = params.get("date");
-                if (dateParam) {
-                    editEntry(dateParam);
-                }
+            var s1 = document.createElement('script');
+            s1.src = 'version.js?t=' + Date.now();
+            s1.onload = function() {
+                var s2 = document.createElement('script');
+                s2.src = 'diary-data.js?t=' + tim;
+                s2.onload = function() {
+                    renderList();
+                    setTodayDate();
+                    initFileLink();
+                    initVersionLink();
+                    // 检查 URL 参数，自动加载对应日期的日记
+                    var params = new URLSearchParams(window.location.search);
+                    var dateParam = params.get("date");
+                    if (dateParam) {
+                        editEntry(dateParam);
+                    }
+                };
+                document.head.appendChild(s2);
             };
-            document.head.appendChild(s);
+            document.head.appendChild(s1);
         })();
 
         var editingDate = null; // 当前正在编辑的日期（null 表示新增模式）
-        var fileHandle = null;  // 关联的本地文件句柄
+        var fileHandle = null;  // 关联的 diary-data.js 文件句柄
+        var versionFileHandle = null; // 关联的 version.js 文件句柄
 
         // ===== IndexedDB 存取文件句柄 =====
         var DB_NAME = "diary_db";
@@ -472,14 +472,41 @@
             lines.push("    var parts = dateStr.split(\"-\");");
             lines.push("    return parts[0] + \".\" + parseInt(parts[1]) + \".\" + parseInt(parts[2]);");
             lines.push("}");
-            lines.push("");
-            lines.push("// 数据版本号（每次编辑保存时 +1，用于缓存控制）");
-            lines.push("var diaryVersion = " + diaryVersion + ";");
             return lines.join("\n");
         }
 
-        // ===== 版本文件管理 =====
-        var versionFileHandle = null;
+        // 同步写入本地文件
+        async function syncToFile() {
+            if (!fileHandle) return;
+            try {
+                var hasPermission = await verifyPermission(fileHandle);
+                if (!hasPermission) {
+                    showToast("文件写入权限被拒绝", "error");
+                    return;
+                }
+                var content = generateFileContent();
+                var writable = await fileHandle.createWritable();
+                await writable.write(content);
+                await writable.close();
+            } catch (e) {
+                showToast("同步到文件失败: " + e.message, "error");
+            }
+        }
+
+        // 页面加载时检查已关联的文件
+        async function initFileLink() {
+            try {
+                var handle = await loadHandle();
+                if (handle) {
+                    fileHandle = handle;
+                    updateFileStatus(true);
+                }
+            } catch (e) {
+                console.error("加载文件句柄失败", e);
+            }
+        }
+
+        // ===== version.js 版本文件管理 =====
 
         async function saveVersionHandle(handle) {
             var db = await openDB();
@@ -515,8 +542,8 @@
                 });
                 versionFileHandle = handle[0];
                 await saveVersionHandle(versionFileHandle);
-                updateVersionFileStatus(true);
-                showToast("已关联 version.js", "success");
+                updateVersionStatus(true);
+                showToast("已关联版本文件", "success");
             } catch (e) {
                 if (e.name !== "AbortError") {
                     showToast("关联失败: " + e.message, "error");
@@ -524,76 +551,47 @@
             }
         }
 
-        function updateVersionFileStatus(linked) {
-            var status = document.getElementById("version-file-status");
-            if (linked) {
-                status.textContent = "已关联，保存时同步更新";
-                status.className = "file-status linked";
-            } else {
-                status.textContent = "未关联，需手动更新";
-                status.className = "file-status";
-            }
-        }
-
-        async function initVersionFileLink() {
+        async function initVersionLink() {
             try {
                 var handle = await loadVersionHandle();
                 if (handle) {
                     versionFileHandle = handle;
-                    updateVersionFileStatus(true);
+                    updateVersionStatus(true);
                 }
             } catch (e) {
                 console.error("加载版本文件句柄失败", e);
             }
         }
 
-        function generateVersionFileContent() {
-            return "var diaryVersion = " + diaryVersion + ";\n";
-        }
-
-        // 同步写入本地文件（diary-data.js + version.js）
-        async function syncToFile() {
-            if (!fileHandle) return;
-            try {
-                // 版本号 +1
-                diaryVersion = (diaryVersion || 0) + 1;
-
-                // 写入 diary-data.js
-                var hasPermission = await verifyPermission(fileHandle);
-                if (!hasPermission) {
-                    showToast("文件写入权限被拒绝", "error");
-                    return;
-                }
-                var content = generateFileContent();
-                var writable = await fileHandle.createWritable();
-                await writable.write(content);
-                await writable.close();
-
-                // 写入 version.js
-                if (versionFileHandle) {
-                    var vPermission = await verifyPermission(versionFileHandle);
-                    if (vPermission) {
-                        var vContent = generateVersionFileContent();
-                        var vWritable = await versionFileHandle.createWritable();
-                        await vWritable.write(vContent);
-                        await vWritable.close();
-                    }
-                }
-            } catch (e) {
-                showToast("同步到文件失败: " + e.message, "error");
+        function updateVersionStatus(linked) {
+            var status = document.getElementById("version-file-status");
+            if (linked) {
+                status.textContent = "已关联，保存时自动更新版本号";
+                status.className = "file-status linked";
+            } else {
+                status.textContent = "未关联版本文件";
+                status.className = "file-status";
             }
         }
 
-        // 页面加载时检查已关联的文件
-        async function initFileLink() {
+        function generateVersionContent() {
+            return '// 版本号 - 每次更新日记后自动加 1\nvar tim = ' + tim + ';\n';
+        }
+
+        async function syncVersionFile() {
+            if (!versionFileHandle) return;
             try {
-                var handle = await loadHandle();
-                if (handle) {
-                    fileHandle = handle;
-                    updateFileStatus(true);
+                var hasPermission = await verifyPermission(versionFileHandle);
+                if (!hasPermission) {
+                    showToast("版本文件写入权限被拒绝", "error");
+                    return;
                 }
+                var content = generateVersionContent();
+                var writable = await versionFileHandle.createWritable();
+                await writable.write(content);
+                await writable.close();
             } catch (e) {
-                console.error("加载文件句柄失败", e);
+                showToast("同步版本文件失败: " + e.message, "error");
             }
         }
 
@@ -685,9 +683,11 @@
                 // 更新
                 if (updateDiaryEntry(editingDate, paragraphs)) {
                     showToast("日记已更新", "success");
+                    tim++;
                     resetForm();
                     renderList();
                     syncToFile();
+                    syncVersionFile();
                 } else {
                     showToast("更新失败", "error");
                 }
@@ -695,9 +695,11 @@
                 // 新增
                 if (addDiaryEntry(date, paragraphs)) {
                     showToast("日记已添加", "success");
+                    tim++;
                     resetForm();
                     renderList();
                     syncToFile();
+                    syncVersionFile();
                 } else {
                     showToast("该日期已存在日记，请直接编辑", "error");
                 }
@@ -726,8 +728,10 @@
                     if (editingDate === pendingDeleteDate) {
                         resetForm();
                     }
+                    tim++;
                     renderList();
                     syncToFile();
+                    syncVersionFile();
                 } else {
                     showToast("删除失败", "error");
                 }

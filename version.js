@@ -1,1 +1,2 @@
-var diaryVersion = 3;
+// 版本号 - 每次更新日记后自动加 1
+var tim = 4;

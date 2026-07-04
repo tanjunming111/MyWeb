@@ -54,18 +54,15 @@
         </div>
     </div>
     <div id="diary-content" style="max-width: 700px; margin: 30px auto; padding: 15px; line-height: 1.7;">
-        <!-- 内容由 JavaScript 动态填充 -->
+        <p style="color: #999; font-size: 15px;">加载中...</p>
     </div>
     <div style="background-color:#f1f1f1; text-align:center; padding:40px;">
         <p>我的网站</p>
     </div>
 
-    <script src="version.js"></script>
     <script>
         (function() {
-            var s = document.createElement('script');
-            s.src = 'diary-data.js?t=' + (typeof diaryVersion !== 'undefined' ? diaryVersion : Date.now());
-            s.onload = function() {
+            function renderDiary() {
                 var params = new URLSearchParams(window.location.search);
                 var date = params.get("date");
                 var container = document.getElementById("diary-content");
@@ -86,8 +83,19 @@
                 } else {
                     container.innerHTML = "<h2>Jimmy</h2><hr><p>未指定日期。</p>";
                 }
+            }
+
+            // 先加载 version.js（极小，用时间戳保证最新）
+            var s1 = document.createElement('script');
+            s1.src = 'version.js?t=' + Date.now();
+            s1.onload = function() {
+                // 再加载 diary-data.js（用 tim 做缓存键，版本不变时使用缓存）
+                var s2 = document.createElement('script');
+                s2.src = 'diary-data.js?t=' + tim;
+                s2.onload = renderDiary;
+                document.head.appendChild(s2);
             };
-            document.head.appendChild(s);
+            document.head.appendChild(s1);
         })();
     </script>
 </body>
