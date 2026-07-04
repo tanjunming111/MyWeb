@@ -40,7 +40,7 @@
         }
     </style>
 </head>
-<body>
+<body style="opacity:0; transition:opacity 0.2s ease;">
     <div style="background-color: #f1f1f1; padding: 20px;">
         <a href="index.html">
             <img src="tjm.jpg" alt="tjm"
@@ -60,42 +60,30 @@
         <p>我的网站</p>
     </div>
 
+    <script src="diary-data.js?t=v1"></script>
     <script>
         (function() {
-            function renderDiary() {
-                var params = new URLSearchParams(window.location.search);
-                var date = params.get("date");
-                var container = document.getElementById("diary-content");
+            var params = new URLSearchParams(window.location.search);
+            var date = params.get("date");
+            var container = document.getElementById("diary-content");
 
-                if (date) {
-                    document.getElementById("edit-link").href = "edit.html?date=" + date;
-                    var entry = getDiaryEntry(date);
-                    if (entry) {
-                        var html = "<h2>Jimmy</h2><hr><h3>" + formatDateTitle(entry.date) + "</h3>";
-                        entry.paragraphs.forEach(function(p) {
-                            html += "<p>" + p + "</p>";
-                        });
-                        container.innerHTML = html;
-                        document.title = "我的网站 - " + formatDate(entry.date);
-                    } else {
-                        container.innerHTML = "<h2>Jimmy</h2><hr><p>未找到该日期的日记。</p>";
-                    }
+            if (date) {
+                document.getElementById("edit-link").href = "edit.html?date=" + date;
+                var entry = getDiaryEntry(date);
+                if (entry) {
+                    var html = "<h2>Jimmy</h2><hr><h3>" + formatDateTitle(entry.date) + "</h3>";
+                    entry.paragraphs.forEach(function(p) {
+                        html += "<p>" + p + "</p>";
+                    });
+                    container.innerHTML = html;
+                    document.title = "我的网站 - " + formatDate(entry.date);
                 } else {
-                    container.innerHTML = "<h2>Jimmy</h2><hr><p>未指定日期。</p>";
+                    container.innerHTML = "<h2>Jimmy</h2><hr><p>未找到该日期的日记。</p>";
                 }
+            } else {
+                container.innerHTML = "<h2>Jimmy</h2><hr><p>未指定日期。</p>";
             }
-
-            // 先加载 version.js（极小，用时间戳保证最新）
-            var s1 = document.createElement('script');
-            s1.src = 'version.js?t=' + Date.now();
-            s1.onload = function() {
-                // 再加载 diary-data.js（用 tim 做缓存键，版本不变时使用缓存）
-                var s2 = document.createElement('script');
-                s2.src = 'diary-data.js?t=' + tim;
-                s2.onload = renderDiary;
-                document.head.appendChild(s2);
-            };
-            document.head.appendChild(s1);
+            document.body.style.opacity = '1';
         })();
     </script>
 </body>

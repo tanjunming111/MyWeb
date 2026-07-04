@@ -3,6 +3,11 @@
 // ==========================================
 // 数据直接存储在此文件中
 // 通过 edit.html 编辑后自动同步写入本地文件
+// ===== 缓存版本号（更新数据后请同步修改此版本号） =====
+var DATA_VERSION = "v1";
+// 每次修改本文件中的数据后，将上面的 v1 改成 v2、v3……
+// 同时需要同步修改 menu.html、diary.html、edit.html 中
+// script src="diary-data.js?t=v1" 的版本号
 
 // 日记数据（编辑后自动同步到此文件）
 var defaultDiaryData = [

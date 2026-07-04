@@ -75,7 +75,7 @@
         }
     </style>
 </head>
-<body>
+<body style="opacity:0; transition:opacity 0.2s ease;">
     <div style="background-color: #f1f1f1; padding: 20px;">
         <a href="index.html">
             <img src="tjm.jpg" alt="tjm"
@@ -88,47 +88,35 @@
             <a href="edit.html" class="edit-btn">编辑日记</a>
         </div>
         <div id="menu-content">
-            <p class="empty-msg" id="loading-msg">加载中...</p>
+            <p class="empty-msg">加载中...</p>
         </div>
     </div>
     <div style="background-color:#f1f1f1; text-align:center; padding:40px;">
         <p>我的网站</p>
     </div>
 
+    <script src="diary-data.js?t=v1"></script>
     <script>
         (function() {
-            function renderMenu() {
-                var menu = document.getElementById("menu-content");
-                var grouped = getDiaryByMonth();
-                var months = Object.keys(grouped);
+            var menu = document.getElementById("menu-content");
+            var grouped = getDiaryByMonth();
+            var months = Object.keys(grouped);
 
-                if (months.length === 0) {
-                    menu.innerHTML = '<p class="empty-msg">暂无日记，点击"编辑日记"添加。</p>';
-                } else {
-                    var html = "";
-                    months.forEach(function(month) {
-                        html += '<h2 class="month-title">' + getMonthLabel(month) + '</h2>';
-                        html += '<div class="date-list">';
-                        grouped[month].forEach(function(entry) {
-                            html += '<a href="diary.html?date=' + entry.date + '">' + formatDate(entry.date) + '</a>';
-                        });
-                        html += '</div>';
+            if (months.length === 0) {
+                menu.innerHTML = '<p class="empty-msg">暂无日记，点击"编辑日记"添加。</p>';
+            } else {
+                var html = "";
+                months.forEach(function(month) {
+                    html += '<h2 class="month-title">' + getMonthLabel(month) + '</h2>';
+                    html += '<div class="date-list">';
+                    grouped[month].forEach(function(entry) {
+                        html += '<a href="diary.html?date=' + entry.date + '">' + formatDate(entry.date) + '</a>';
                     });
-                    menu.innerHTML = html;
-                }
+                    html += '</div>';
+                });
+                menu.innerHTML = html;
             }
-
-            // 先加载 version.js（极小，用时间戳保证最新）
-            var s1 = document.createElement('script');
-            s1.src = 'version.js?t=' + Date.now();
-            s1.onload = function() {
-                // 再加载 diary-data.js（用 tim 做缓存键，版本不变时使用缓存）
-                var s2 = document.createElement('script');
-                s2.src = 'diary-data.js?t=' + tim;
-                s2.onload = renderMenu;
-                document.head.appendChild(s2);
-            };
-            document.head.appendChild(s1);
+            document.body.style.opacity = '1';
         })();
     </script>
 </body>
