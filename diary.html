@@ -38,9 +38,19 @@
         .edit-btn:hover {
             background-color: #555;
         }
+
+        /* ===== 加载状态：所有内容渲染完成后再一次性呈现 ===== */
+        body {
+            opacity: 1;
+            transition: opacity 0.25s ease;
+        }
+        body.loading {
+            opacity: 0;
+            transition: none;
+        }
     </style>
 </head>
-<body style="opacity:0; transition:opacity 0.2s ease;">
+<body class="loading">
     <div style="background-color: #f1f1f1; padding: 20px;">
         <a href="index.html">
             <img src="tjm.jpg" alt="tjm"
@@ -54,35 +64,42 @@
         </div>
     </div>
     <div id="diary-content" style="max-width: 700px; margin: 30px auto; padding: 15px; line-height: 1.7;">
+        <!-- 内容由 JavaScript 动态填充 -->
     </div>
     <div style="background-color:#f1f1f1; text-align:center; padding:40px;">
         <p>我的网站</p>
     </div>
 
-    <script src="diary-data.js?t=v1"></script>
     <script>
         (function() {
-            var params = new URLSearchParams(window.location.search);
-            var date = params.get("date");
-            var container = document.getElementById("diary-content");
+            var s = document.createElement('script');
+            s.src = 'diary-data.js?t=' + Date.now();
+            s.onload = function() {
+                var params = new URLSearchParams(window.location.search);
+                var date = params.get("date");
+                var container = document.getElementById("diary-content");
 
-            if (date) {
-                document.getElementById("edit-link").href = "edit.html?date=" + date;
-                var entry = getDiaryEntry(date);
-                if (entry) {
-                    var html = "<h2>Jimmy</h2><hr><h3>" + formatDateTitle(entry.date) + "</h3>";
-                    entry.paragraphs.forEach(function(p) {
-                        html += "<p>" + p + "</p>";
-                    });
-                    container.innerHTML = html;
-                    document.title = "我的网站 - " + formatDate(entry.date);
+                if (date) {
+                    document.getElementById("edit-link").href = "edit.html?date=" + date;
+                    var entry = getDiaryEntry(date);
+                    if (entry) {
+                        var html = "<h2>Jimmy</h2><hr><h3>" + formatDateTitle(entry.date) + "</h3>";
+                        entry.paragraphs.forEach(function(p) {
+                            html += "<p>" + p + "</p>";
+                        });
+                        container.innerHTML = html;
+                        document.title = "我的网站 - " + formatDate(entry.date);
+                    } else {
+                        container.innerHTML = "<h2>Jimmy</h2><hr><p>未找到该日期的日记。</p>";
+                    }
                 } else {
-                    container.innerHTML = "<h2>Jimmy</h2><hr><p>未找到该日期的日记。</p>";
+                    container.innerHTML = "<h2>Jimmy</h2><hr><p>未指定日期。</p>";
                 }
-            } else {
-                container.innerHTML = "<h2>Jimmy</h2><hr><p>未指定日期。</p>";
-            }
-            document.body.style.opacity = '1';
+
+                // 所有内容渲染完毕，一次性显示页面
+                document.body.classList.remove('loading');
+            };
+            document.head.appendChild(s);
         })();
     </script>
 </body>

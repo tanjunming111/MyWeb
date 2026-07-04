@@ -73,9 +73,19 @@
             font-size: 15px;
             padding: 20px 0;
         }
+
+        /* ===== 加载状态：所有内容渲染完成后再一次性呈现 ===== */
+        body {
+            opacity: 1;
+            transition: opacity 0.25s ease;
+        }
+        body.loading {
+            opacity: 0;
+            transition: none;
+        }
     </style>
 </head>
-<body style="opacity:0; transition:opacity 0.2s ease;">
+<body class="loading">
     <div style="background-color: #f1f1f1; padding: 20px;">
         <a href="index.html">
             <img src="tjm.jpg" alt="tjm"
@@ -88,34 +98,42 @@
             <a href="edit.html" class="edit-btn">编辑日记</a>
         </div>
         <div id="menu-content">
+            <!-- 菜单内容由 JavaScript 动态生成 -->
         </div>
     </div>
     <div style="background-color:#f1f1f1; text-align:center; padding:40px;">
         <p>我的网站</p>
     </div>
 
-    <script src="diary-data.js?t=v1"></script>
     <script>
         (function() {
-            var menu = document.getElementById("menu-content");
-            var grouped = getDiaryByMonth();
-            var months = Object.keys(grouped);
+            var s = document.createElement('script');
+            // 添加时间戳防止浏览器缓存，确保获取最新数据
+            s.src = 'diary-data.js?t=' + Date.now();
+            s.onload = function() {
+                var menu = document.getElementById("menu-content");
+                var grouped = getDiaryByMonth();
+                var months = Object.keys(grouped);
 
-            if (months.length === 0) {
-                menu.innerHTML = '<p class="empty-msg">暂无日记，点击"编辑日记"添加。</p>';
-            } else {
-                var html = "";
-                months.forEach(function(month) {
-                    html += '<h2 class="month-title">' + getMonthLabel(month) + '</h2>';
-                    html += '<div class="date-list">';
-                    grouped[month].forEach(function(entry) {
-                        html += '<a href="diary.html?date=' + entry.date + '">' + formatDate(entry.date) + '</a>';
+                if (months.length === 0) {
+                    menu.innerHTML = '<p class="empty-msg">暂无日记，点击"编辑日记"添加。</p>';
+                } else {
+                    var html = "";
+                    months.forEach(function(month) {
+                        html += '<h2 class="month-title">' + getMonthLabel(month) + '</h2>';
+                        html += '<div class="date-list">';
+                        grouped[month].forEach(function(entry) {
+                            html += '<a href="diary.html?date=' + entry.date + '">' + formatDate(entry.date) + '</a>';
+                        });
+                        html += '</div>';
                     });
-                    html += '</div>';
-                });
-                menu.innerHTML = html;
-            }
-            document.body.style.opacity = '1';
+                    menu.innerHTML = html;
+                }
+
+                // 所有内容渲染完毕，一次性显示页面
+                document.body.classList.remove('loading');
+            };
+            document.head.appendChild(s);
         })();
     </script>
 </body>

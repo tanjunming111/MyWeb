@@ -208,9 +208,19 @@
         .file-status.linked {
             color: #5cb85c;
         }
+
+        /* ===== 加载状态：所有内容渲染完成后再一次性呈现 ===== */
+        body {
+            opacity: 1;
+            transition: opacity 0.25s ease;
+        }
+        body.loading {
+            opacity: 0;
+            transition: none;
+        }
     </style>
 </head>
-<body style="opacity:0; transition:opacity 0.2s ease;">
+<body class="loading">
     <div style="background-color: #f1f1f1; padding: 20px;">
         <a href="index.html">
             <img src="tjm.jpg" alt="tjm"
@@ -270,8 +280,27 @@
         </div>
     </div>
 
-    <script src="diary-data.js?t=v1"></script>
     <script>
+        // 动态加载 diary-data.js（带时间戳，强制获取最新版本）
+        (function() {
+            var s = document.createElement('script');
+            s.src = 'diary-data.js?t=' + Date.now();
+            s.onload = function() {
+                renderList();
+                setTodayDate();
+                initFileLink();
+                // 检查 URL 参数，自动加载对应日期的日记
+                var params = new URLSearchParams(window.location.search);
+                var dateParam = params.get("date");
+                if (dateParam) {
+                    editEntry(dateParam);
+                }
+
+                // 所有内容渲染完毕，一次性显示页面
+                document.body.classList.remove('loading');
+            };
+            document.head.appendChild(s);
+        })();
 
         var editingDate = null; // 当前正在编辑的日期（null 表示新增模式）
         var fileHandle = null;  // 关联的本地文件句柄
@@ -368,11 +397,6 @@
             lines.push("// ==========================================");
             lines.push("// 数据直接存储在此文件中");
             lines.push("// 通过 edit.html 编辑后自动同步写入本地文件");
-            lines.push("// ===== 缓存版本号（更新数据后请同步修改此版本号） =====");
-            lines.push("var DATA_VERSION = \"" + (window.DATA_VERSION || "v1") + "\";");
-            lines.push("// 每次修改本文件中的数据后，将上面的版本号升级（v1→v2→v3……）");
-            lines.push("// 同时需要同步修改 menu.html、diary.html、edit.html 中");
-            lines.push("// script src=\"diary-data.js?t=...\" 的版本号");
             lines.push("");
             lines.push("// 日记数据（编辑后自动同步到此文件）");
             lines.push("var defaultDiaryData = [");
@@ -629,19 +653,6 @@
             }
         });
 
-        // === 页面初始化 ===
-        (function() {
-            renderList();
-            setTodayDate();
-            initFileLink();
-            // 检查 URL 参数，自动加载对应日期的日记
-            var params = new URLSearchParams(window.location.search);
-            var dateParam = params.get("date");
-            if (dateParam) {
-                editEntry(dateParam);
-            }
-            document.body.style.opacity = '1';
-        })();
     </script>
 </body>
 </html>
