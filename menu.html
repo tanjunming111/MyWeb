@@ -109,7 +109,7 @@
         (function() {
             var s = document.createElement('script');
             // 添加时间戳防止浏览器缓存，确保获取最新数据
-            s.src = 'diary-data.js?t=' +1;
+            s.src = 'diary-data.js?t=' + Date.now();
             s.onload = function() {
                 var menu = document.getElementById("menu-content");
                 var grouped = getDiaryByMonth();

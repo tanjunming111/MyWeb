@@ -284,7 +284,7 @@
         // 动态加载 diary-data.js（带时间戳，强制获取最新版本）
         (function() {
             var s = document.createElement('script');
-            s.src = 'diary-data.js?t=' + 1;
+            s.src = 'diary-data.js?t=' + Date.now();
             s.onload = function() {
                 renderList();
                 setTodayDate();
