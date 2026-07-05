@@ -73,7 +73,7 @@
     <script>
         (function() {
             var s = document.createElement('script');
-            s.src = 'diary-data.js?t=' + Math.floor(Date.now()/60000);
+            s.src = 'diary-data.js?t=' + 1;
             s.onload = function() {
                 var params = new URLSearchParams(window.location.search);
                 var date = params.get("date");
