@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>我的网站 - 编辑日记</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         .edit-container {
             max-width: 800px;
@@ -209,6 +210,99 @@
             color: #5cb85c;
         }
 
+        /* ===== 字数统计 ===== */
+        .char-count {
+            text-align: right;
+            font-size: 13px;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        /* ===== Markdown 预览切换 ===== */
+        .md-toolbar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        .md-tab {
+            padding: 6px 18px;
+            border: 1px solid #ccc;
+            border-radius: 16px;
+            font-size: 13px;
+            cursor: pointer;
+            background: #fff;
+            color: #555;
+            transition: all 0.2s ease;
+        }
+        .md-tab.active {
+            background: #333;
+            color: #fff;
+            border-color: #333;
+        }
+        .md-tab:hover:not(.active) {
+            background: #f0f0f0;
+        }
+        .md-preview {
+            width: 100%;
+            min-height: 350px;
+            padding: 10px 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 15px;
+            line-height: 1.7;
+            box-sizing: border-box;
+            background: #fff;
+            display: none;
+            overflow-y: auto;
+        }
+        .md-preview.show {
+            display: block;
+        }
+        .md-preview h1, .md-preview h2, .md-preview h3,
+        .md-preview h4, .md-preview h5, .md-preview h6 {
+            margin: 0.5em 0 0.3em;
+            color: #333;
+        }
+        .md-preview h1 { font-size: 1.6em; }
+        .md-preview h2 { font-size: 1.35em; }
+        .md-preview h3 { font-size: 1.15em; }
+        .md-preview p { margin: 0.5em 0; }
+        .md-preview ul, .md-preview ol { padding-left: 1.5em; margin: 0.5em 0; }
+        .md-preview blockquote {
+            border-left: 4px solid #ddd;
+            padding-left: 12px;
+            color: #666;
+            margin: 0.5em 0;
+        }
+        .md-preview code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        .md-preview pre {
+            background: #f5f5f5;
+            padding: 12px;
+            border-radius: 6px;
+            overflow-x: auto;
+        }
+        .md-preview pre code {
+            background: none;
+            padding: 0;
+        }
+        .md-preview img { max-width: 100%; border-radius: 6px; }
+        .md-preview table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 0.5em 0;
+        }
+        .md-preview th, .md-preview td {
+            border: 1px solid #ddd;
+            padding: 8px 10px;
+            text-align: left;
+        }
+        .md-preview th { background: #f5f5f5; }
+
         /* ===== 加载状态：所有内容渲染完成后再一次性呈现 ===== */
         body {
             opacity: 1;
@@ -245,7 +339,13 @@
             </div>
             <div class="form-group">
                 <label for="content-input">内容（每行一段）</label>
-                <textarea id="content-input" placeholder="在这里输入日记内容..."></textarea>
+                <div class="md-toolbar">
+                    <span class="md-tab active" id="md-edit-tab" onclick="switchMdMode('edit')">编辑</span>
+                    <span class="md-tab" id="md-preview-tab" onclick="switchMdMode('preview')">预览</span>
+                </div>
+                <textarea id="content-input" placeholder="在这里输入日记内容... 支持 Markdown 语法：**加粗** *斜体* #标题 -列表" oninput="updateCharCount(); updatePreview();"></textarea>
+                <div class="md-preview" id="md-preview"></div>
+                <div class="char-count" id="char-count">已写 0 字</div>
             </div>
             <div class="form-actions">
                 <button class="btn btn-save" onclick="saveEntry()">保存</button>
@@ -556,6 +656,44 @@
             setTodayDate();
             document.getElementById("date-input").disabled = false;
             document.getElementById("content-input").value = "";
+            updateCharCount(); // 重置字数统计
+        }
+
+        // 字数统计
+        function updateCharCount() {
+            var text = document.getElementById("content-input").value;
+            document.getElementById("char-count").textContent = "已写 " + text.length + " 字";
+        }
+
+        // 切换编辑/预览模式
+        function switchMdMode(mode) {
+            var textarea = document.getElementById("content-input");
+            var preview = document.getElementById("md-preview");
+            var editTab = document.getElementById("md-edit-tab");
+            var previewTab = document.getElementById("md-preview-tab");
+
+            if (mode === "preview") {
+                // 切换到预览：渲染 Markdown
+                preview.innerHTML = marked.parse(textarea.value || "*（暂无内容）*");
+                textarea.style.display = "none";
+                preview.classList.add("show");
+                editTab.classList.remove("active");
+                previewTab.classList.add("active");
+            } else {
+                // 切换到编辑
+                textarea.style.display = "";
+                preview.classList.remove("show");
+                editTab.classList.add("active");
+                previewTab.classList.remove("active");
+            }
+        }
+
+        // 实时更新预览内容（在编辑模式下后台刷新，切换到预览时直接显示最新内容）
+        function updatePreview() {
+            var preview = document.getElementById("md-preview");
+            if (preview.classList.contains("show")) {
+                preview.innerHTML = marked.parse(document.getElementById("content-input").value || "*（暂无内容）*");
+            }
         }
 
         // 编辑模式：加载已有日记到表单
@@ -567,6 +705,7 @@
                 document.getElementById("date-input").value = date;
                 document.getElementById("date-input").disabled = true; // 编辑时不可改日期
                 document.getElementById("content-input").value = entry.paragraphs.join("\n");
+                updateCharCount(); // 更新字数统计
                 window.scrollTo({ top: 0, behavior: "smooth" });
             }
         }
