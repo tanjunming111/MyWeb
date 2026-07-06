@@ -168,11 +168,11 @@
         <!-- 日期快速跳转栏 -->
         <div class="jump-section">
             <label>查询日记：</label>
-            <input type="text" class="jump-input" id="jump-year" placeholder="年" maxlength="4" inputmode="numeric" oninput="this.value=this.value.replace(/\D/g,'')">
+            <input type="text" class="jump-input" id="jump-year" placeholder="年" maxlength="4" inputmode="numeric" oninput="this.value=this.value.replace(/\D/g,'')" style="width: 50px;">
             <span class="jump-sep">年</span>
-            <input type="text" class="jump-input" id="jump-month" placeholder="月" maxlength="2" inputmode="numeric" oninput="this.value=this.value.replace(/\D/g,'')">
+            <input type="text" class="jump-input" id="jump-month" placeholder="月" maxlength="2" inputmode="numeric" oninput="this.value=this.value.replace(/\D/g,'')" style="width: 25px;">
             <span class="jump-sep">月</span>
-            <input type="text" class="jump-input" id="jump-day" placeholder="日" maxlength="2" inputmode="numeric" oninput="this.value=this.value.replace(/\D/g,'')">
+            <input type="text" class="jump-input" id="jump-day" placeholder="日" maxlength="2" inputmode="numeric" oninput="this.value=this.value.replace(/\D/g,'')" style="width: 25px;">
             <span class="jump-sep">日</span>
             <!-- 三个输入框输入任何非数字字符（字母、小数点、符号等）都会被立即过滤，只能输入数字 -->
             <button class="jump-btn" onclick="jumpToDate()">前往</button>

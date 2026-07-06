@@ -103,6 +103,13 @@
         .btn-secondary:hover {
             background-color: #d0d0d0;
         }
+        .btn-danger {
+            background-color: #d9534f;
+            color: #fff;
+        }
+        .btn-danger:hover {
+            background-color: #c9302c;
+        }
         .existing-list {
             list-style: none;
             padding: 0;
@@ -343,13 +350,14 @@
                     <span class="md-tab active" id="md-edit-tab" onclick="switchMdMode('edit')">编辑</span>
                     <span class="md-tab" id="md-preview-tab" onclick="switchMdMode('preview')">预览</span>
                 </div>
-                <textarea id="content-input" placeholder="在这里输入日记内容... 支持 Markdown 语法：**加粗** *斜体* #标题 -列表" oninput="updateCharCount(); updatePreview();"></textarea>
+                <textarea id="content-input" placeholder="在这里输入日记内容... 支持 Markdown 语法：**加粗** *斜体* #标题 -列表等" oninput="updateCharCount(); updatePreview();"></textarea>
                 <div class="md-preview" id="md-preview"></div>
                 <div class="char-count" id="char-count">已写 0 字</div>
             </div>
             <div class="form-actions">
                 <button class="btn btn-save" onclick="saveEntry()">保存</button>
                 <button class="btn btn-secondary" onclick="resetForm()">清空</button>
+                <button class="btn btn-danger" id="delete-btn" onclick="deleteCurrentEntry()" style="display:none">删除</button>
             </div>
         </div>
 
@@ -657,6 +665,7 @@
             document.getElementById("date-input").disabled = false;
             document.getElementById("content-input").value = "";
             updateCharCount(); // 重置字数统计
+            document.getElementById("delete-btn").style.display = "none"; // 新增模式下隐藏删除按钮
         }
 
         // 字数统计
@@ -706,8 +715,31 @@
                 document.getElementById("date-input").disabled = true; // 编辑时不可改日期
                 document.getElementById("content-input").value = entry.paragraphs.join("\n");
                 updateCharCount(); // 更新字数统计
+                document.getElementById("delete-btn").style.display = ""; // 编辑模式下显示删除按钮
                 window.scrollTo({ top: 0, behavior: "smooth" });
             }
+        }
+
+        // 删除当前正在编辑的日记
+        function deleteCurrentEntry() {
+            if (!editingDate) return;
+            // 使用已有的确认弹窗
+            document.getElementById("modal-text").textContent = "确认删除 " + formatDate(editingDate) + " 的日记？";
+            document.getElementById("modal").classList.add("show");
+            // 把确认按钮的 onclick 临时绑定为执行删除
+            document.getElementById("modal-confirm").onclick = function() {
+                if (deleteDiaryEntry(editingDate)) {
+                    showToast("日记已删除", "success");
+                    resetForm();
+                    renderList();
+                    syncToFile();
+                } else {
+                    showToast("删除失败", "error");
+                }
+                closeModal();
+                // 恢复确认按钮的默认行为（列表删除）
+                document.getElementById("modal-confirm").onclick = defaultModalConfirm;
+            };
         }
 
         // 保存（新增或更新）
@@ -768,7 +800,10 @@
             pendingDeleteDate = null;
         }
 
-        document.getElementById("modal-confirm").addEventListener("click", function() {
+        document.getElementById("modal-confirm").addEventListener("click", defaultModalConfirm);
+
+        // 从列表删除的默认确认处理
+        function defaultModalConfirm() {
             if (pendingDeleteDate) {
                 if (deleteDiaryEntry(pendingDeleteDate)) {
                     showToast("日记已删除", "success");
@@ -783,7 +818,7 @@
                 }
                 closeModal();
             }
-        });
+        }
 
         // 点击遮罩关闭弹窗
         document.getElementById("modal").addEventListener("click", function(e) {
