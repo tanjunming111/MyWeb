@@ -85,6 +85,50 @@
         }
         .diary-body th { background: #f5f5f5; }
 
+        /* ===== 上/下篇导航 ===== */
+        .nav-container {
+            max-width: 700px;
+            margin: 0 auto 60px;
+            padding: 0 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+        .nav-link {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            padding: 10px 20px;
+            background-color: #f5f5f5;
+            color: #333;
+            text-decoration: none;
+            border-radius: 20px;
+            font-size: 14px;
+            transition: background-color 0.2s ease;
+            max-width: 45%;
+        }
+        .nav-link:hover {
+            background-color: #e0e0e0;
+        }
+        .nav-link.disabled {
+            color: #bbb;
+            pointer-events: none;
+            background-color: #fafafa;
+        }
+        .nav-link .nav-date {
+            display: block;
+            font-size: 12px;
+            color: #999;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .nav-link:hover .nav-date {
+            color: #666;
+        }
+
         /* ===== 加载状态：所有内容渲染完成后再一次性呈现 ===== */
         body {
             opacity: 1;
@@ -112,6 +156,13 @@
     <div id="diary-content" class="diary-body">
         <!-- 内容由 JavaScript 动态填充 -->
     </div>
+
+    <!-- 上/下篇导航 -->
+    <div class="nav-container" id="nav-container">
+        <a class="nav-link" id="prev-link" href="#">&larr; 上一篇</a>
+        <a class="nav-link" id="next-link" href="#">下一篇 &rarr;</a>
+    </div>
+
     <div style="background-color:#f1f1f1; text-align:center; padding:20px;">
         <p>我的网站</p>
         <p><a href="changelog.html" style="color:#2d8cf0; text-decoration:none;">更新日志</a></p>
@@ -126,7 +177,10 @@
                 var date = params.get("date");
                 var container = document.getElementById("diary-content");
 
-                if (date) {
+                if (!date) {
+                    // 无日期参数时隐藏导航
+                    document.getElementById("nav-container").style.display = "none";
+                } else {
                     document.getElementById("edit-link").href = "edit.html?date=" + date;
                     var entry = getDiaryEntry(date);
                     if (entry) {
@@ -136,6 +190,37 @@
                         document.title = "我的网站 - " + formatDate(entry.date);
                     } else {
                         container.innerHTML = "<h2>" + formatDateTitle(date) + "</h2><hr><p>未找到该日期的日记。</p>";
+                    }
+
+                    // 查找上一篇和下一篇
+                    var data = loadDiaryData();
+                    var currentIndex = -1;
+                    for (var i = 0; i < data.length; i++) {
+                        if (data[i].date === date) {
+                            currentIndex = i;
+                            break;
+                        }
+                    }
+
+                    var prevLink = document.getElementById("prev-link");
+                    var nextLink = document.getElementById("next-link");
+
+                    if (currentIndex > 0) {
+                        var prev = data[currentIndex - 1];
+                        prevLink.href = "diary.html?date=" + prev.date;
+                        prevLink.innerHTML = "&larr; 上一篇<span class=\"nav-date\">" + formatDate(prev.date) + "</span>";
+                    } else {
+                        prevLink.classList.add("disabled");
+                        prevLink.innerHTML = "&larr; 已是第一篇";
+                    }
+
+                    if (currentIndex >= 0 && currentIndex < data.length - 1) {
+                        var next = data[currentIndex + 1];
+                        nextLink.href = "diary.html?date=" + next.date;
+                        nextLink.innerHTML = "下一篇 &rarr;<span class=\"nav-date\">" + formatDate(next.date) + "</span>";
+                    } else {
+                        nextLink.classList.add("disabled");
+                        nextLink.innerHTML = "已是最后一篇 &rarr;";
                     }
                 }
 
