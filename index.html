@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>我的网站</title>
     <style>
+        body {
+            margin: 0;
+        }
         .menu-btn {
             display: inline-block;
             padding: 12px 24px;
@@ -25,21 +28,15 @@
     </style>
 </head>
 <body>
-    <div style="background-color: #f1f1f1; padding: 20px;">
-        <a href=index.html>
-            <img src="tjm.jpg"
-                alt="tjm"
-                style="width:80px; height:80px; border-radius:50%; object-fit:cover;">
-        </a>
-    </div>
+    <div style="background: linear-gradient(to bottom, transparent 60%, white 100%), url('background.png') center 55%/cover no-repeat; height: 400px;"></div>
     <div style="
         max-width: 700px;
-        margin: 30px auto;
+        margin: -130px auto 20px; /* -60px: 向上偏移60像素，与上方元素重叠；auto: 水平居中，自动计算左右边距；60px: 底部外边距60像素 */
         padding: 15px;
         line-height: 1.7;
         text-align: center;
     ">
-        <h2>Jimmy</h2>
+        <h2 style="font-size: 36px;">Jimmy</h2>
         <hr>
         <p>欢迎来到我的网站。</p>
         <p>点击下面的按钮查看日记。</p>
@@ -48,8 +45,9 @@
             <a href="edit.html" class="menu-btn">编辑日记</a>
         </div>
     </div>
-    <div style="background-color:#f1f1f1; text-align:center; padding:40px;">
+    <div style="background-color:#f1f1f1; text-align:center; padding:20px;">
         <p>我的网站</p>
+        <p><a href="changelog.html" style="color:#2d8cf0; text-decoration:none;">更新日志</a></p>
     </div>
 </body>
 </html>

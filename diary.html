@@ -43,7 +43,7 @@
         /* ===== 日记内容 Markdown 渲染 ===== */
         .diary-body {
             max-width: 700px;
-            margin: 30px auto;
+            margin: 30px auto 80px;
             padding: 15px;
             line-height: 1.7;
         }
@@ -88,7 +88,7 @@
         /* ===== 加载状态：所有内容渲染完成后再一次性呈现 ===== */
         body {
             opacity: 1;
-            transition: opacity 0.25s ease;
+            transition: opacity 0.2s ease;
         }
         body.loading {
             opacity: 0;
@@ -103,7 +103,7 @@
                 style="width:80px; height:80px; border-radius:50%; object-fit:cover;">
         </a>
     </div>
-    <div style="max-width: 700px; margin: 20px auto 0; padding: 0 15px;">
+    <div style="max-width: 700px; margin: 20px auto 80px; padding: 0 15px;">
         <div class="top-bar">
             <a href="menu.html" class="back-btn">&larr; 返回菜单</a>
             <a href="#" class="edit-btn" id="edit-link">编辑日记</a>
@@ -112,8 +112,9 @@
     <div id="diary-content" class="diary-body">
         <!-- 内容由 JavaScript 动态填充 -->
     </div>
-    <div style="background-color:#f1f1f1; text-align:center; padding:40px;">
+    <div style="background-color:#f1f1f1; text-align:center; padding:20px;">
         <p>我的网站</p>
+        <p><a href="changelog.html" style="color:#2d8cf0; text-decoration:none;">更新日志</a></p>
     </div>
 
     <script>

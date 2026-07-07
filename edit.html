@@ -8,7 +8,7 @@
     <style>
         .edit-container {
             max-width: 800px;
-            margin: 30px auto;
+            margin: 30px auto 50px;
             padding: 0 15px;
         }
         .back-btn {
@@ -313,7 +313,7 @@
         /* ===== 加载状态：所有内容渲染完成后再一次性呈现 ===== */
         body {
             opacity: 1;
-            transition: opacity 0.25s ease;
+            transition: opacity 0.2s ease;
         }
         body.loading {
             opacity: 0;
@@ -345,7 +345,7 @@
                 <input type="date" id="date-input" lang="zh-CN">
             </div>
             <div class="form-group">
-                <label for="content-input">内容（每行一段）</label>
+                <label for="content-input">内容</label>
                 <div class="md-toolbar">
                     <span class="md-tab active" id="md-edit-tab" onclick="switchMdMode('edit')">编辑</span>
                     <span class="md-tab" id="md-preview-tab" onclick="switchMdMode('preview')">预览</span>
@@ -370,8 +370,9 @@
         </div>
     </div>
 
-    <div style="background-color:#f1f1f1; text-align:center; padding:40px;">
+    <div style="background-color:#f1f1f1; text-align:center; padding:20px;">
         <p>我的网站</p>
+        <p><a href="changelog.html" style="color:#2d8cf0; text-decoration:none;">更新日志</a></p>
     </div>
 
     <!-- 提示消息 -->
@@ -639,7 +640,8 @@
             var html = "";
             data.forEach(function(entry) {
                 html += '<li>';
-                html += '<span>' + formatDate(entry.date) + '</span>';
+                var parts = entry.date.split("-");
+                html += '<span>' + parseInt(parts[0]) + '年' + parseInt(parts[1]) + '月' + parseInt(parts[2]) + '日</span>';
                 html += '<div class="item-actions">';
                 html += '<button class="btn btn-secondary" onclick="editEntry(\'' + entry.date + '\')">编辑</button>';
                 html += '<button class="btn btn-delete" onclick="confirmDelete(\'' + entry.date + '\')">删除</button>';
@@ -747,8 +749,8 @@
             var date = document.getElementById("date-input").value;
             var content = document.getElementById("content-input").value;
 
-            if (!date) {
-                showToast("请选择日期", "error");
+            if (!date) { //日期不存在
+                showToast("日期不存在", "error");
                 return;
             }
             if (!content.trim()) {
