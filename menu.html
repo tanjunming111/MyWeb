@@ -231,7 +231,8 @@
             if (!month) month = document.getElementById("jump-month").placeholder;
             if (!day) day = document.getElementById("jump-day").placeholder;
 
-            // 补零处理：1 → 01
+            // 补零处理：1 → 0001，1 → 01
+            year = year.padStart(4, "0");
             month = month.padStart(2, "0");
             day = day.padStart(2, "0");
 

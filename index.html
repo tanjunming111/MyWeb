@@ -31,18 +31,13 @@
         .btn-group {
             margin-top: 20px;
         }
-        .visitor-count {
-            margin-top: 16px;
-            font-size: 15px;
-            color: #666;
-        }
     </style>
 </head>
 <body class="loading">
     <div style="background: linear-gradient(to bottom, transparent 80%, white 100%), url('background.png') center 55%/cover no-repeat; height: 400px;"></div>
     <div style="
         max-width: 700px;
-        margin: -130px auto 20px; /* -60px: 向上偏移60像素，与上方元素重叠；auto: 水平居中，自动计算左右边距；60px: 底部外边距60像素 */
+        margin: -130px auto 20px; /* -130px: 向上偏移130像素，与上方元素重叠；auto: 水平居中，自动计算左右边距；20px: 底部外边距20像素 */
         padding: 15px;
         line-height: 1.7;
         text-align: center;
@@ -51,7 +46,6 @@
         <hr>
         <p>欢迎来到我的网站。</p>
         <p>点击下面的按钮查看日记。</p>
-        <p class="visitor-count" id="visitor-count">浏览人数：加载中...</p>
         <div class="btn-group">
             <a href="menu.html" class="menu-btn">查看日记</a>
             <a href="edit.html" class="menu-btn">编辑日记</a>
@@ -66,25 +60,6 @@
         window.addEventListener('load', function() {
             document.body.classList.remove('loading');
         });
-
-        // 获取浏览人数（通过 countapi.xyz 免费计数 API）
-        (function() {
-            var el = document.getElementById("visitor-count");
-            var req = new XMLHttpRequest();
-            req.open("GET", "https://api.countapi.xyz/hit/tjm-diary/visitors");
-            req.onload = function() {
-                if (req.status === 200) {
-                    var data = JSON.parse(req.responseText);
-                    el.textContent = "浏览人数：" + data.value;
-                } else {
-                    el.textContent = "浏览人数：获取失败";
-                }
-            };
-            req.onerror = function() {
-                el.textContent = "浏览人数：获取失败";
-            };
-            req.send();
-        })();
     </script>
 </body>
 </html>

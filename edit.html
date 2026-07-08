@@ -356,7 +356,6 @@
             </div>
             <div class="form-actions">
                 <button class="btn btn-save" onclick="saveEntry()">保存</button>
-                <button class="btn btn-secondary" onclick="resetForm()">清空</button>
                 <button class="btn btn-danger" id="delete-btn" onclick="deleteCurrentEntry()" style="display:none">删除</button>
             </div>
         </div>
@@ -769,9 +768,10 @@
                 // 更新
                 if (updateDiaryEntry(editingDate, paragraphs)) {
                     showToast("日记已更新", "success");
-                    resetForm();
-                    renderList();
                     syncToFile();
+                    setTimeout(function() {
+                        window.location.href = "diary.html?date=" + editingDate;
+                    }, 300);
                 } else {
                     showToast("更新失败", "error");
                 }
@@ -779,9 +779,10 @@
                 // 新增
                 if (addDiaryEntry(date, paragraphs)) {
                     showToast("日记已添加", "success");
-                    resetForm();
-                    renderList();
                     syncToFile();
+                    setTimeout(function() {
+                        window.location.href = "diary.html?date=" + date;
+                    }, 300);
                 } else {
                     showToast("该日期已存在日记，请直接编辑", "error");
                 }
