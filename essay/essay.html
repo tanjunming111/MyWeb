@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的网站 - 随笔</title>
+    <style>
+        body {
+            margin: 0;
+            opacity: 1;
+            transition: opacity 0.2s ease;
+        }
+        body.loading {
+            opacity: 0;
+            transition: none;
+        }
+
+        /* ===== 顶部导航 ===== */
+        .top-bar {
+            max-width: 750px;
+            margin: 0 auto;
+            padding: 20px 15px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 8px 20px;
+            background-color: #e0e0e0;
+            color: #333;
+            text-decoration: none;
+            border-radius: 20px;
+            font-size: 14px;
+            transition: background-color 0.2s ease;
+        }
+        .back-btn:hover {
+            background-color: #d0d0d0;
+        }
+        .edit-btn {
+            display: inline-block;
+            padding: 8px 20px;
+            background-color: #333;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 20px;
+            font-size: 14px;
+            transition: background-color 0.2s ease;
+        }
+        .edit-btn:hover {
+            background-color: #555;
+        }
+
+        /* ===== 随笔正文 ===== */
+        .essay-body {
+            max-width: 750px;
+            margin: 30px auto 80px;
+            padding: 15px;
+            line-height: 1.8;
+        }
+        .essay-body h2 {
+            font-size: 26px;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        .essay-body .essay-date {
+            font-size: 15px;
+            color: #999;
+            margin-bottom: 20px;
+        }
+        .essay-body .essay-content {
+            font-size: 16px;
+            color: #444;
+        }
+        .essay-body .essay-content p {
+            margin: 0.3em 0;
+            text-indent: 2em; /* 每行缩进两个字符 */
+        }
+    </style>
+</head>
+<body class="loading">
+    <!-- 顶部头像区域 -->
+    <div style="background-color: #f1f1f1; padding: 20px;">
+        <a href="../index.html">
+            <img src="../tjm.jpg" alt="tjm"
+                style="width:80px; height:80px; border-radius:50%; object-fit:cover;">
+        </a>
+    </div>
+
+    <!-- 导航栏 -->
+    <div class="top-bar">
+        <a href="e-menu.html" class="back-btn">&larr; 返回列表</a>
+        <a href="#" class="edit-btn" id="edit-link">编辑</a>
+    </div>
+
+    <!-- 随笔正文 -->
+    <div class="essay-body" id="essay-content">
+        <!-- 由下方 JavaScript 动态填充 -->
+    </div>
+
+    <!-- 底部 -->
+    <div style="background-color:#f1f1f1; text-align:center; padding:20px;">
+        <p>我的网站</p>
+        <p><a href="../changelog.html" style="color:#2d8cf0; text-decoration:none;">更新日志</a></p>
+    </div>
+
+    <script>
+        (function() {
+            var s = document.createElement('script');
+            s.src = 'essay-data.js?t=' + Date.now();
+            s.onload = function() {
+                var params = new URLSearchParams(window.location.search);
+                var id = parseInt(params.get("id"), 10);
+                var essay = getEssayById(id);
+                var container = document.getElementById("essay-content");
+
+                if (!essay) {
+                    container.innerHTML = '<h2>未找到该随笔</h2><p style="color:#999;">请返回随笔列表重新选择。</p>';
+                    document.title = "我的网站 - 未找到";
+                    document.getElementById("edit-link").style.display = "none";
+                } else {
+                    document.title = "我的网站 - " + essay.title;
+                    // 设置编辑链接
+                    document.getElementById("edit-link").href = "e-edit.html?id=" + essay.id;
+                    // 将内容按 <br> 切分成段落，每段用 <p> 包裹
+                    var paragraphs = essay.content.split(/<br\s*>/);
+                    var contentHtml = "";
+                    for (var i = 0; i < paragraphs.length; i++) {
+                        if (paragraphs[i].trim() !== "") {
+                            contentHtml += "<p>" + paragraphs[i] + "</p>";
+                        }
+                    }
+                    container.innerHTML =
+                        '<h2>' + essay.title + '</h2>' +
+                        '<div class="essay-date">' + essay.date + '</div>' +
+                        '<div class="essay-content">' + contentHtml + '</div>';
+                }
+
+                // 所有内容渲染完毕，一次性显示页面
+                document.body.classList.remove('loading');
+            };
+            document.head.appendChild(s);
+        })();
+    </script>
+</body>
+</html>
