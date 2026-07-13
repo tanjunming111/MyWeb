@@ -345,7 +345,10 @@
                 <input type="date" id="date-input" lang="zh-CN">
             </div>
             <div class="form-group">
-                <label for="content-input">内容</label>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                    <label for="content-input" style="margin-bottom: 0;">内容</label>
+                    <button class="btn btn-save" onclick="quickSaveEntry()" style="padding: 6px 18px; font-size: 13px;">保存</button>
+                </div>
                 <div class="md-toolbar">
                     <span class="md-tab active" id="md-edit-tab" onclick="switchMdMode('edit')">编辑</span>
                     <span class="md-tab" id="md-preview-tab" onclick="switchMdMode('preview')">预览</span>
@@ -355,7 +358,7 @@
                 <div class="char-count" id="char-count">已写 0 字</div>
             </div>
             <div class="form-actions">
-                <button class="btn btn-save" onclick="saveEntry()">保存</button>
+                <button class="btn btn-save" onclick="saveEntry()">发布</button>
                 <button class="btn btn-danger" id="delete-btn" onclick="deleteCurrentEntry()" style="display:none">删除</button>
             </div>
         </div>
@@ -683,8 +686,8 @@
             var previewTab = document.getElementById("md-preview-tab");
 
             if (mode === "preview") {
-                // 切换到预览：渲染 Markdown
-                preview.innerHTML = marked.parse(textarea.value || "*（暂无内容）*");
+                // 切换到预览：渲染 Markdown（启用 breaks 使换行可见）
+                preview.innerHTML = marked.parse(textarea.value || "*（暂无内容）*", { breaks: true });
                 textarea.style.display = "none";
                 preview.classList.add("show");
                 editTab.classList.remove("active");
@@ -702,7 +705,7 @@
         function updatePreview() {
             var preview = document.getElementById("md-preview");
             if (preview.classList.contains("show")) {
-                preview.innerHTML = marked.parse(document.getElementById("content-input").value || "*（暂无内容）*");
+                preview.innerHTML = marked.parse(document.getElementById("content-input").value || "*（暂无内容）*", { breaks: true });
             }
         }
 
@@ -743,7 +746,7 @@
             };
         }
 
-        // 保存（新增或更新）
+        //发布（新增或更新）
         function saveEntry() {
             var date = document.getElementById("date-input").value;
             var content = document.getElementById("content-input").value;
@@ -768,10 +771,9 @@
                 // 更新
                 if (updateDiaryEntry(editingDate, paragraphs)) {
                     showToast("日记已更新", "success");
+                    resetForm();
+                    renderList();
                     syncToFile();
-                    setTimeout(function() {
-                        window.location.href = "diary.html?date=" + editingDate;
-                    }, 300);
                 } else {
                     showToast("更新失败", "error");
                 }
@@ -779,12 +781,59 @@
                 // 新增
                 if (addDiaryEntry(date, paragraphs)) {
                     showToast("日记已添加", "success");
+                    resetForm();
+                    renderList();
                     syncToFile();
-                    setTimeout(function() {
-                        window.location.href = "diary.html?date=" + date;
-                    }, 300);
                 } else {
                     showToast("该日期已存在日记，请直接编辑", "error");
+                }
+            }
+        }
+
+        // 快速保存（保存在内容栏右侧的按钮，不重置表单、不跳转页面）
+        function quickSaveEntry() {
+            var date = document.getElementById("date-input").value;
+            var content = document.getElementById("content-input").value;
+
+            if (!date) {
+                showToast("日期不存在", "error");
+                return;
+            }
+            if (!content.trim()) {
+                showToast("内容不能为空", "error");
+                return;
+            }
+
+            // 按换行分段
+            var paragraphs = content.split("\n").map(function(s) {
+                return s.trim();
+            }).filter(function(s) {
+                return s.length > 0;
+            });
+
+            if (editingDate) {
+                // 更新
+                if (updateDiaryEntry(editingDate, paragraphs)) {
+                    showToast("已保存", "success");
+                    // 不重置表单，保持当前内容不变
+                    renderList();
+                    syncToFile();
+                } else {
+                    showToast("保存失败", "error");
+                }
+            } else {
+                // 新增
+                if (addDiaryEntry(date, paragraphs)) {
+                    showToast("已保存", "success");
+                    // 切换为编辑模式，保持内容不变
+                    editingDate = date;
+                    document.getElementById("form-title").textContent = "编辑日记 - " + formatDate(date);
+                    document.getElementById("date-input").disabled = true;
+                    document.getElementById("delete-btn").style.display = "";
+                    renderList();
+                    syncToFile();
+                } else {
+                    showToast("该日期已存在日记", "error");
                 }
             }
         }

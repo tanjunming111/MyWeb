@@ -169,6 +169,13 @@
     </div>
 
     <script>
+        // 根据日期字符串返回英文星期几
+        function getWeekday(dateStr) {
+            var parts = dateStr.split("-");
+            var d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+            return ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][d.getDay()];
+        }
+
         (function() {
             var s = document.createElement('script');
             s.src = 'diary-data.js?t=' + Date.now();
@@ -184,12 +191,14 @@
                     document.getElementById("edit-link").href = "edit.html?date=" + date;
                     var entry = getDiaryEntry(date);
                     if (entry) {
-                        var html = "<h2>" + formatDateTitle(entry.date) + "</h2><hr>";
+                        var weekday = getWeekday(entry.date);
+                        var html = "<h2>" + formatDateTitle(entry.date) + "&nbsp; <span style=\"font-weight:normal;font-style:normal;\">" + weekday + "</span></h2><hr>";
                         html += marked.parse(entry.paragraphs.join("\n\n"));
                         container.innerHTML = html;
                         document.title = "我的网站 - " + formatDate(entry.date);
                     } else {
-                        container.innerHTML = "<h2>" + formatDateTitle(date) + "</h2><hr><p>未找到该日期的日记。</p>";
+                        var weekday = getWeekday(date);
+                        container.innerHTML = "<h2>" + formatDateTitle(date) + "&nbsp; <span style=\"font-weight:normal;font-style:normal;\">" + weekday + "</span></h2><hr><p>未找到该日期的日记。</p>";
                     }
 
                     // 查找上一篇和下一篇
